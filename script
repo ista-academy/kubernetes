@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+#######################################
+# Constants
+#######################################
+KIND_VERSION="v0.31.0"
+KIND_BIN="/usr/local/bin/kind"
+ROOTLESS_INSTALLER_URL="https://raw.githubusercontent.com/docker/docker-install/master/rootless-install.sh"
+
+#######################################
+# Helpers
+#######################################
+log() {
+  echo "[INFO] $*"
+}
+
+error() {
+  echo "[ERROR] $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || error "Required command '$1' not found"
+}
+
+#######################################
+# Preconditions
+#######################################
+require_cmd curl
+require_cmd uname
+require_cmd chmod
+require_cmd mv
+
+ARCH="$(uname -m)"
+if [[ "$ARCH" != "x86_64" ]]; then
+  error "Unsupported architecture: $ARCH (only x86_64 is supported)"
+fi
+
+#######################################
+# Install Rootless Docker
+#######################################
+install_rootless_docker() {
+  if command -v docker >/dev/null 2>&1; then
+    log "Docker already installed, skipping rootless install"
+    return
+  fi
+
+  log "Installing rootless Docker"
+  TMP_FILE="$(mktemp)"
+
+  curl -fsSL "$ROOTLESS_INSTALLER_URL" -o "$TMP_FILE"
+  chmod +x "$TMP_FILE"
+  sh "$TMP_FILE"
+
+  rm -f "$TMP_FILE"
+
+  log "Rootless Docker installation completed"
+  log "Ensure the following is set in your shell profile:"
+  log "  export PATH=\$HOME/bin:\$PATH"
+  log "  export DOCKER_HOST=unix:///run/user/\$(id -u)/docker.sock"
+}
+
+#######################################
+# Install Kind
+#######################################
+install_kind() {
+  if command -v kind >/dev/null 2>&1; then
+    log "Kind already installed, skipping"
+    return
+  fi
+
+  log "Installing Kind ${KIND_VERSION}"
+  TMP_FILE="$(mktemp)"
+
+  curl -fsSL "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" -o "$TMP_FILE"
+  chmod +x "$TMP_FILE"
+  sudo mv "$TMP_FILE" "$KIND_BIN"
+
+  log "Kind installed at $KIND_BIN"
+}
+
+#######################################
+# Verification
+#######################################
+verify() {
+  log "Verifying installations"
+
+  command -v docker >/dev/null 2>&1 || log "Docker binary not in PATH yet (expected until shell reload)"
+  command -v kind >/dev/null 2>&1 || error "Kind verification failed"
+
+  log "Verification completed"
+}
+
+#######################################
+# Main
+#######################################
+main() {
+  install_rootless_docker
+  install_kind
+  verify
+
+  log "All components installed successfully"
+}
+
+main
+
