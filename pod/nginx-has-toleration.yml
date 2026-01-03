@@ -6,7 +6,7 @@ metadata:
   name: nginx
 spec:
   tolerations:
-    - key: "app"
+  - key: "app"
     operator: "Equal"
     value: "blue"
     effect: "NoSchedule"
