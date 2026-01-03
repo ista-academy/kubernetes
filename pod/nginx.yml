@@ -9,25 +9,26 @@ spec:
   containers:
   - image: nginx
     name: nginx
----
-apiVersion: apps/v1
-kind: ReplicaSet
-metadata:
-  name: neginx-relicaset
-  labels:
-    app: nginx-app
-    type: nginx-front
-spec:
-  template:
-    metadata:
-      labels:
-        run: nginx
-      name: nginx
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-  replicas: 2
-  selector:
-    matchLabels:
-      run: nginx
+
+# ---
+# apiVersion: apps/v1
+# kind: ReplicaSet
+# metadata:
+#   name: neginx-relicaset
+#   labels:
+#     app: nginx-app
+#     type: nginx-front
+# spec:
+#   template:
+#     metadata:
+#       labels:
+#         run: nginx
+#       name: nginx
+#     spec:
+#       containers:
+#       - image: nginx
+#         name: nginx
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       run: nginx
