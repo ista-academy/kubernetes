@@ -16,6 +16,15 @@ spec:
         app: nginx-high-priority
     spec:
       priorityClassName: high-priority
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - name: nginx
         image: nginx:latest
@@ -60,6 +69,15 @@ spec:
         app: nginx-medium-priority
     spec:
       priorityClassName: medium-priority
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - name: nginx
         image: nginx:latest
